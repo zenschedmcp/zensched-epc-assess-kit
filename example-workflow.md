@@ -2,9 +2,9 @@
 
 This shows the exact tool calls the agent makes for a first week of operation, following `SKILL.md`. The owner only types the quoted lines; everything else is the agent's work. Assumes setup from `QUICKSTART.md` is complete (both MCP servers configured, `schema.sql` loaded, `SKILL.md` given as instructions).
 
-The business is **Ridgeway EPC**, a solo Domestic Energy Assessor (Owen Hale) in Bristol, British Summer Time (`+01:00` in September). IDs and responses are illustrative. ZenSched IDs are integers. Watch what does **not** cross to ZenSched: the occupants' names and phone numbers, the key-safe codes, UPRN, RRN, Owen's DEA number. ZenSched sees `EPC 14 Oak Lane`, a street address, and a photo Assessment Record.
+The business is **Ridgeway EPC**, a solo Domestic Energy Assessor (Owen Hale) in Bristol, British Summer Time (`+01:00` in September; UK/IE BST ends the last Sunday in October — 2026-10-25 — then GMT `+00:00`. Views stamp `settings.timezone_offset` onto `start_iso` / `end_iso`, so flip the setting first or every November shift is an hour late). IDs and responses are illustrative. ZenSched IDs are integers. Watch what does **not** cross to ZenSched: the occupants' names and phone numbers, the key-safe codes, UPRN, RRN, Owen's DEA number. ZenSched sees `EPC 14 Oak Lane`, a street address, and a photo Assessment Record.
 
-This is **not** official EPC lodgement.
+This is **not** the official EPC register and **not** RdSAP / SAP / DEAP lodgement. The Assessment Record's A–G field is a working note, not the register band.
 
 ## Session start (every session)
 
@@ -54,7 +54,7 @@ sqlite_execute: UPDATE settings SET value = '1' WHERE key = 'default_assessor_id
 
 The DEA number is **not** sent to ZenSched. It lives only in `assessors.accreditation_no`.
 
-> You're invited; install the app from the email. Your visits will land on your own phone. Your DEA number stays on your computer. Next, the Assessment Record: it's free to create and every visit comes back with property type, a working band A–G, up to four evidence photos, and a visit outcome. No signature — this is not official lodgement. Want me to set it up now?
+> You're invited; install the app from the email. Your visits will land on your own phone. Your DEA number stays on your computer. Next, the Assessment Record: it's free to create and every visit comes back with property type, a working A–G note, up to four evidence photos, and a visit outcome. No signature — this is not the official EPC register and not RdSAP / DEAP lodgement. Want me to set it up now?
 
 Owner: *"yes"*
 
@@ -68,7 +68,7 @@ form_create:
 ```json
 [
   {"type": "section", "label": "Assessment record", "identifier": "sec_assessment",
-   "text": "Internal visit record and evidence photos only. This is NOT official EPC lodgement. Lodge the certificate in your scheme software (Elmhurst, Quidos, ECMK, Stroma) or on the Landmark register. Do not write UPRN, RRN, occupant names, or access codes here."},
+   "text": "Internal visit record and evidence photos only. This form is NOT the official EPC register, not an RdSAP / SAP / DEAP calculation, and not lodgement. Lodge in Elmhurst, Quidos, Stroma, DEAP, or your scheme portal. The A-G field is a working note, not the register band. Do not write UPRN, RRN, occupant names, or access codes here."},
   {"type": "select", "label": "Property type", "identifier": "property_type", "required": true,
    "options": ["House", "Flat", "Bungalow", "Maisonette", "Park home", "Other"]},
   {"type": "select", "label": "Rating band", "identifier": "rating_band",
@@ -86,7 +86,7 @@ form_create:
 sqlite_execute: UPDATE settings SET value = '501' WHERE key = 'assessment_form_id';
 ```
 
-> Assessment Record form created. I'll attach it to every visit automatically. There is no signature step, and submitting it does not lodge a certificate.
+> Assessment Record form created. I'll attach it to every visit automatically. There is no signature step. Submitting it does not lodge a certificate, does not write to the official register, and is not RdSAP / DEAP.
 
 Optional, if the owner wants a wider circle for mansion blocks:
 
@@ -188,7 +188,7 @@ sqlite_execute:
   WHERE assessment_id = 1;
 ```
 
-> Booked EPC-2026-0001 for Hartwell at 14 Oak Lane, Thu 10 Sep 10:00–11:00, £85 domestic. The Assessment Record is on your phone. Key safe 4419 and Priya's name stay on your computer. This is not official lodgement. About $0.38 once you punch and I read the photo record (new address).
+> Booked EPC-2026-0001 for Hartwell at 14 Oak Lane, Thu 10 Sep 10:00–11:00, £85 domestic. The Assessment Record is on your phone. Key safe 4419 and Priya's name stay on your computer. This is not the official EPC register and not RdSAP / DEAP lodgement. About $0.38 once you punch and I read the photo record (new address).
 
 ## "Add a one-off for Maya Chen (landlord) at Flat 3, 8 Harbour View, Portishead BS20 7HG, Friday 2026-09-11 at 14:00, £85. Keys with the neighbour at number 6."
 
@@ -249,7 +249,7 @@ sqlite_execute:
   WHERE assessment_id = 2;
 ```
 
-> Booked EPC-2026-0002 for Maya Chen at 8 Harbour View, Fri 11 Sep 14:00–15:00, £85 domestic. Neighbour-keys note is local only. Same Assessment Record — not lodgement.
+> Booked EPC-2026-0002 for Maya Chen at 8 Harbour View, Fri 11 Sep 14:00–15:00, £85 domestic. Neighbour-keys note is local only. Same Assessment Record — not the official register, not RdSAP / DEAP lodgement.
 
 ## Owen does the work
 
@@ -287,22 +287,19 @@ form_export:
   since: "2026-09-10"
   until: "2026-09-13"
   format: "json"
-  → row_count: 2, rows: [
+  → row_count: 2, submissions: [
       { submission_id: 5501, worker_id: 801, event_id: 7301, submitted_at: "2026-09-10 10:44:12",
-        data: { property_type: "house", rating_band: "c",
-                visit_outcome: "completed",
-                notes: "Solid wall, original windows, loft 100 mm. Working band C." },
-        media: [ { cdn_url: "https://cdn.zensched.com/m/.../o1.jpg" },
-                 { cdn_url: "https://cdn.zensched.com/m/.../o2.jpg" },
-                 { cdn_url: "https://cdn.zensched.com/m/.../o3.jpg" },
-                 { cdn_url: "https://cdn.zensched.com/m/.../o4.jpg" } ] },
+        property_type: "house", rating_band: "c", visit_outcome: "completed",
+        notes: "Solid wall, original windows, loft 100 mm. Working band C.",
+        media_urls: "https://cdn.zensched.com/m/.../o1.jpg;https://cdn.zensched.com/m/.../o2.jpg;https://cdn.zensched.com/m/.../o3.jpg;https://cdn.zensched.com/m/.../o4.jpg" },
       { submission_id: 5502, worker_id: 801, event_id: 7302, submitted_at: "2026-09-11 14:04:40",
-        data: { property_type: "flat",
-                visit_outcome: "no_access",
-                notes: "Keys with neighbour — not home. Will need a revisit." },
-        media: [ { cdn_url: "https://cdn.zensched.com/m/.../h1.jpg" } ] }
+        property_type: "flat", visit_outcome: "no_access",
+        notes: "Keys with neighbour — not home. Will need a revisit.",
+        media_urls: "https://cdn.zensched.com/m/.../h1.jpg" }
     ]
-    billing: { meter: "form_media", units: 2, price: 0.30 }
+    billing: { form_media: { units: 2, unit_price: "$0.15" }, note: "Each submission bills once ever (replays are free)." }
+  -- form_submissions media items (if reading one visit) are
+  -- { field_id, cdn_url, thumbnail_url, original_filename }
 
 shift_status: shift_id 89011
   → status "checked_out", actual_in "2026-09-10T09:52:10+01:00", actual_out "2026-09-10T10:48:05+01:00",
@@ -333,7 +330,7 @@ sqlite_execute:
 
 > Recorded 2 visits, both GPS-verified.
 >
-> **Oak Lane (EPC-2026-0001):** House / working band **C** / Completed. 4 photos. Lodge this in Elmhurst yourself — I do not lodge.
+> **Oak Lane (EPC-2026-0001):** House / working band **C** / Completed. 4 photos. Lodge this in Elmhurst / DEAP yourself — I do not lodge, and that C is not the register band.
 >
 > **Harbour View (EPC-2026-0002):** Flat / **No access** — neighbour not in. Trip £35. No band recorded (correct). Say the word if you want a Friday revisit on the same place (reuses the pin, no new geocode).
 
@@ -348,7 +345,7 @@ sqlite_query: SELECT * FROM reports_to_export WHERE assessment_no = 'EPC-2026-00
 sqlite_execute: UPDATE assessments SET exported_at = date('now') WHERE assessment_id = 1;
 ```
 
-> Evidence pack for EPC-2026-0001 — **not official lodgement**:
+> Evidence pack for EPC-2026-0001 — **not the official EPC register, not RdSAP / DEAP lodgement**:
 >
 > ```
 > Ridgeway EPC  —  evidence pack  —  EPC-2026-0001
@@ -368,7 +365,7 @@ sqlite_execute: UPDATE assessments SET exported_at = date('now') WHERE assessmen
 >
 > Notes: Solid wall, original windows, loft 100 mm. Working band C.
 >
-> Lodge in Elmhurst / Landmark yourself. This pack is your file copy.
+> Lodge in Elmhurst / Quidos / DEAP / Landmark yourself. This pack is your file copy — not the register.
 > ```
 >
 > Tell me the RRN when you've lodged and I'll store it locally only.
@@ -416,6 +413,7 @@ The agent then writes the invoices out as text:
 >
 > Total due: £85.00
 > Visit GPS-verified at the property.
+> Visit record and evidence photos on file — official EPC / BER is lodged in your scheme software, not in ZenSched.
 > ```
 >
 > ```
@@ -428,6 +426,7 @@ The agent then writes the invoices out as text:
 >
 > Total due: £35.00
 > Visit GPS-verified at the property (no access).
+> Visit record and evidence photos on file — official EPC / BER is lodged in your scheme software, not in ZenSched.
 > ```
 >
 > Say "sent" when they're out and I'll note the date. Want me to book the Harbour View revisit?

@@ -4,7 +4,7 @@ Setup is about 15 minutes, once. After that everything is plain English to your 
 
 You need: Claude Desktop (or Cursor) and [Node.js LTS](https://nodejs.org/) installed. Nothing else.
 
-Before you start, read the "This is not official EPC lodgement" section of `README.md`. Short version: this kit puts each assessment on your phone, GPS-stamps arrival at the property, and collects a photo Assessment Record (property type, working rating band A–G, up to 4 evidence photos). It does **not** lodge a certificate with Landmark / the Scottish register / SEAI, does not run RdSAP, and does not burn a GPS stamp onto photos. Occupant names, key-safe codes, UPRN, RRN, and your DEA number stay on your computer; ZenSched only ever sees an `EPC 14 Oak Lane` label, a street address, and the Assessment Record.
+Before you start, read the "This is not official EPC lodgement" section of `README.md`. Short version: this kit puts each assessment on your phone, GPS-stamps arrival at the property, and collects a photo Assessment Record (property type, working A–G note, up to 4 evidence photos). It is **not** the official EPC register, **not** RdSAP / SAP / DEAP lodgement, and does not burn a GPS stamp onto photos. Occupant names, key-safe codes, UPRN, RRN, and your DEA number stay on your computer; ZenSched only ever sees an `EPC 14 Oak Lane` label, a street address, and the Assessment Record.
 
 ## 1. Make a data folder
 
@@ -61,7 +61,7 @@ Paste `SKILL.md` into the AI as standing instructions (Claude Desktop: a Project
 
 > My business is Ridgeway EPC in Bristol, British Summer Time. It's just me, Owen Hale, owen@ridgewayepc.example. Save that to settings, invite me as the assessor, and create the Assessment Record form.
 
-The AI saves your settings, invites you as a worker ($0.25) so visits land on your phone, and calls `form_create` once (free) to build the Assessment Record: property type, rating band A–G, up to 4 evidence photos, visit outcome, notes. No signature. It stores the form id so every visit gets it.
+The AI saves your settings, invites you as a worker ($0.25) so visits land on your phone, and calls `form_create` once (free) to build the Assessment Record: property type, working A–G note (not the register band), up to 4 evidence photos, visit outcome, notes. No signature. It is not the official EPC register and not RdSAP / DEAP lodgement. It stores the form id so every visit gets it.
 
 ## 6. Add your first two bookings
 
@@ -85,7 +85,7 @@ Install the app from the invite email ([Android](https://play.google.com/store/a
 
 > Record this week's assessments, export the Oak Lane pack, then draft invoices for anyone with uninvoiced work.
 
-The AI pulls the completed, GPS-verified shifts and the Assessment Records from ZenSched (reading records is metered, so it tells you the cost first), saves a per-visit summary, writes the evidence pack as text (not lodgement), creates invoice records, and writes out each invoice as text you can paste into an email.
+The AI pulls the completed, GPS-verified shifts and the Assessment Records from ZenSched (reading records is metered — `form_export` bills the same as `form_submissions`, once per submission ever — so it tells you the cost first), saves a per-visit summary, writes the evidence pack as text (not the official register, not RdSAP / DEAP lodgement), creates invoice records, and writes out each invoice as text you can paste into an email.
 
 > Hartwell paid INV-2026-0001.
 
