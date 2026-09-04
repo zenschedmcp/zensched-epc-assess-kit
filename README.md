@@ -8,12 +8,12 @@ If you *are* a developer, skip to [For developers](#for-developers).
 
 ## This is not official EPC lodgement — read this first
 
-**What this kit is:** a way for an energy assessor to get every dwelling visit onto their phone from a pasted agent email, prove GPS-verified arrival at the property, record an Assessment Record (property type, a working A–G band, up to 4 evidence photos, visit outcome), and turn those records into an evidence pack, invoices, receivables follow-up, and sub payouts, with an AI assistant doing the clerical work.
+**What this kit is:** a way for an energy assessor to get every dwelling visit onto their phone from a pasted agent email, prove GPS-verified arrival at the property, record an Assessment Record (property type, a working A–G note — not the register band — up to 4 evidence photos, visit outcome), and turn those records into an evidence pack, invoices, receivables follow-up, and sub payouts, with an AI assistant doing the clerical work.
 
 **What it is not:**
 
-- **It is not official EPC lodgement.** It does not submit a certificate to Landmark, the Scottish EPC Register, or the SEAI BER register. It does not produce an RdSAP / SAP / SBEM calculation, a certificate PDF, or a Report Reference Number. `reports_to_export` plus a `form_export` give you the photos and the GPS-verified times; you lodge in Elmhurst, Quidos, ECMK, Stroma, or your scheme's portal the way you do today. If the owner later tells the AI an RRN, it is stored locally only.
-- **It is not a lodgement audit trail.** The Assessment Record's rating band is a working note from the visit, not the lodged certificate. Do not treat a band C on the phone as "the EPC is C on the register."
+- **It is not the official EPC register, and it is not RdSAP / SAP / DEAP lodgement.** It does not submit a certificate to Landmark, the Scottish EPC Register, or the SEAI BER register. It does not produce an RdSAP / SAP / SBEM / DEAP calculation, a certificate PDF, an A–G register band, or a Report Reference Number / BER number. `reports_to_export` plus a `form_export` give you the photos and the GPS-verified times; you lodge in Elmhurst, Quidos, ECMK, Stroma, DEAP, or your scheme's portal the way you do today. If the owner later tells the AI an RRN or BER number, it is stored locally only.
+- **It is not a lodgement audit trail.** The Assessment Record's A–G field is a working note from the visit, **not** the lodged register band. Do not treat a band C on the phone as "the EPC is C on the register." Never tell an auditor or an agent "it's on ZenSched."
 - **It does not watermark photos.** ZenSched records the GPS punch coordinates and the upload time server-side; the exported image is **not** stamped with the date, time, and coordinates. If a scheme or a solicitor later wants a *readable* stamp on the image itself, shoot with your phone camera's timestamp / GPS overlay turned on and upload *that* image.
 - **It is not a signed legal document.** The Assessment Record has no signature field. On ZenSched a signature field replaces the Submit button, so adding one would make every visit look like the assessor had signed or lodged something. Submitting the form is just submitting the form.
 
@@ -160,7 +160,7 @@ See `QUICKSTART.md` for the first-week walkthrough and `example-workflow.md` for
 
 ### What "invoice" means here
 
-"Draft an invoice" records the invoice in your database (number, date, due date, amount, which assessments) and the AI writes out a plain-text invoice you can paste into an email or text message, with a line per visit and a note that the visit was GPS-verified. It does **not** generate a PDF, email it for you, or collect payment. Invoices do not list rating bands, UPRN, RRN, or accreditation numbers unless you ask. When the agency pays, tell the AI ("Hartwell paid INV-2026-0001") and it marks it paid. If you outgrow this, the invoice records are simple enough to import into any accounting tool. VAT is out of scope.
+"Draft an invoice" records the invoice in your database (number, date, due date, amount, which assessments) and the AI writes out a plain-text invoice you can paste into an email or text message, with a line per visit and a note that the visit was GPS-verified. It does **not** generate a PDF, email it for you, or collect payment. Invoices do not list rating bands, UPRN, RRN, or accreditation numbers unless you ask. Each invoice footer says the visit record is not official lodgement — the legal EPC / BER stays in scheme software. When the agency pays, tell the AI ("Hartwell paid INV-2026-0001") and it marks it paid. If you outgrow this, the invoice records are simple enough to import into any accounting tool. VAT is out of scope.
 
 ## Mobile app for assessors
 
@@ -178,18 +178,18 @@ When you invite an assessor (including yourself), they get an email, install the
 | `SQLITE_PATH` points nowhere / "unable to open database" | Folder from step 1 does not exist | Create the folder; the file is created automatically but the folder is not |
 | ZenSched tools return an auth error | Key still says `zsc_your_key_here`, or was pasted with a space | Re-paste the key, restart |
 | `payment_required` | Metered call with no balance | Follow the instructions in the response; $5 deposit |
-| AI creates shifts at the wrong hour | Timezone not set, or daylight saving changed | "Set my timezone offset to +01:00 in settings" (BST) or `+00:00` (GMT / winter). Ireland uses the same offsets. |
+| AI creates shifts at the wrong hour | Timezone not set, or daylight saving changed and `settings.timezone_offset` is stale | "Set my timezone offset to +01:00" (BST) or `+00:00` (GMT / winter). Ireland uses the same. The stored offset is a fixed string and does not flip itself. UK/IE BST starts the last Sunday in March and ends the last Sunday in October (2026-10-25); after that, `+01:00` puts every shift an hour late. |
 | Appointment not on my phone | Booked locally but the ZenSched shift was never created (`needs_shift = 1`) | "Put today's assessments on my phone"; the AI finishes the intake steps |
 | Check-in not GPS-verified at a mansion block / gated development | You parked outside the policy radius, or the pin is on the road | "Set the check-in radius to 200 m" (`policy_update`), or "move the pin to the main entrance" (`location_update`, free; the cached place keeps it), or `location_refine` ($0.10). Do not ask to widen the radius "on that location". |
 | App would not let me check in 15 minutes early | Early check-in window too small | "Allow check-in 20 minutes before the shift" (`checkin_slack_min`) |
 | Forgot to check out | Shift still `checked_in` | Tell the AI the real time; ask for a 15-minute check-out reminder |
-| Assessment Record not on the phone | Form not assigned to that visit's event before the shift was created | "Attach the Assessment Record to EPC-2026-0004" (`form_assign`), then cancel and recreate the shift |
+| Assessment Record not on the phone | Form not assigned to that visit's event before the shift was created | "Attach the Assessment Record to EPC-2026-0004" (`form_assign(form_id, event_id=…)`); it installs on the existing shift, no cancel/recreate. Recreating with the same `shift-epc-{id}` key would only replay the cancelled shift for 24 hours |
 | Photos have no date/GPS printed on them | Working as intended | ZenSched does not burn a stamp onto the image. The punch record holds the GPS/time. Use a camera overlay if you need pixels stamped. |
 | AI refuses to put the occupant's name, UPRN, RRN, or the key-safe code on ZenSched | Working as intended | Occupant PII, register ids, and access codes stay on your computer |
 | Same property geocoded twice | Address typed differently ("Lane" vs "Ln", postcode on a new line) | Tell the AI it is the same place; it merges the `places` rows and keeps one location |
 | Appointment moved to another day fails on `shift_update` | Events are single-day | The AI cancels the shift and creates a new assessment (`rescheduled_from`) with its own event; ask it to |
 | Assessment numbers look like invoices | You numbered an assessment `INV-` | Assessments are `EPC-YYYY-0001`; invoices are `INV-YYYY-0001`. Leave `assessment_no` NULL and the trigger assigns `EPC-`. |
-| AI offers to lodge the EPC or produce a certificate PDF | It shouldn't | This kit does not lodge. Use your scheme software. |
+| AI offers to lodge the EPC, write an RRN, or produce a certificate PDF | It shouldn't | This kit is not the official register and not RdSAP / DEAP lodgement. Use your scheme software. |
 | AI asks you to run SQL yourself | It does not have `SKILL.md` loaded | Re-paste `SKILL.md` as project instructions |
 
 If something is confusing or broken in ZenSched itself, ask the AI to call `feedback_submit` with a description. It is free, needs no account, and a human reads every submission.
@@ -214,13 +214,13 @@ If something is confusing or broken in ZenSched itself, ask the AI to call `feed
 - **Reschedules.** Same day → `shift_update` and update `scheduled_start`. Different day → the single-day event cannot move, so `shift_cancel`, mark the row `rescheduled`, insert a new row with `rescheduled_from` (self-referencing FK, `ON DELETE SET NULL`), and create a new event/shift. Only the new row bills.
 - `assessments.zensched_shift_id`, `assessors.zensched_worker_id`, `payouts.assessment_id`, and `places.normalized_address` are `UNIQUE`. `PRAGMA foreign_keys = ON` is in `schema.sql` and `SKILL.md` tells the agent to run it per session. Deleting an agency cascades to assessments, invoices, and payouts; deleting an assessor sets `assessments.assessor_id` NULL and removes their payouts; `places` is `ON DELETE RESTRICT` while assessments reference it.
 
-**Assessment Record form.** Created once with `form_create(title, fields_json, idempotency_key="form-assessment-record")`; the exact `fields_json` is in `SKILL.md` and `example-workflow.md` (byte-identical) and was validated against ZenSched's `_validate_fields`. Every field carries an explicit `identifier` so submission `data` keys are stable (`property_type`, `rating_band`, `evidence`, `visit_outcome`, `notes`; section `sec_assessment`). Option keys are derived by ZenSched from the labels (lowercase, non-alphanumerics → `_`, truncated at 30 characters): `house` / `flat` / `bungalow` / `maisonette` / `park_home` / `other`; `a`–`g`; `completed` / `no_access` / `incomplete`. Every option here is well under 30 characters, so nothing truncates. `rating_band` is not required so a no-access visit can submit without inventing a band. **No `signature` field.** Attaching is `form_assign(form_id, event_id=...)` per assessment.
+**Assessment Record form.** Created once with `form_create(title, fields_json, idempotency_key="form-assessment-record")`; the exact `fields_json` is in `SKILL.md` and `example-workflow.md` (byte-identical) and was validated against ZenSched's `_validate_fields`. Every field carries an explicit `identifier` so submission `data` keys are stable (`property_type`, `rating_band`, `evidence`, `visit_outcome`, `notes`; section `sec_assessment`). Option keys are derived by ZenSched from the labels (lowercase, non-alphanumerics → `_`, truncated at 30 characters): `house` / `flat` / `bungalow` / `maisonette` / `park_home` / `other`; `a`–`g`; `completed` / `no_access` / `incomplete`. Every option here is well under 30 characters, so nothing truncates. `rating_band` is not required so a no-access visit can submit without inventing a band — it is a working note, **not** the official register band. **No `signature` field.** The form section text states this is not the official EPC register and not RdSAP / DEAP lodgement. Attaching is `form_assign(form_id, event_id=...)` per assessment; a late assign installs on the existing shift (do not cancel and recreate).
 
 **Idempotency keys.** Deterministic, derived from local IDs:
 
 - location: `loc-place-{place_id}`
 - event: `event-epc-{assessment_id}`
-- shift: `shift-epc-{assessment_id}` (an assessor swap on the same assessment appends `-2`)
+- shift: `shift-epc-{assessment_id}` (an assessor swap, a same-day extra, or any replacement after `shift_cancel` appends the next unused suffix: `-2`, then `-3`, … — never reuse a suffix, or the 24-hour replay returns the cancelled shift)
 - assignment: `assign-assessment-{event_id}`
 - cancel: `cancel-shift-{shift_id}`
 - worker: `worker-{email}`
@@ -228,7 +228,7 @@ If something is confusing or broken in ZenSched itself, ask the AI to call `feed
 
 ZenSched caches idempotent responses for 24 hours. The views emit `loc_idempotency_key`, `event_idempotency_key`, and `shift_idempotency_key` per row.
 
-**Timestamps.** `shift_create` / `shift_update` take `start` and `end` in ISO 8601 with an explicit offset. Always use the business's local offset from `settings.timezone_offset` (e.g. `2026-09-10T10:00:00+01:00`), never `Z`. The views build these strings so the agent does not have to. `checked_in_at` / `checked_out_at` keep the offset ZenSched returns.
+**Timestamps.** `shift_create` / `shift_update` take `start` and `end` in ISO 8601 with an explicit offset. Always use the business's local offset from `settings.timezone_offset` (e.g. `2026-09-10T10:00:00+01:00`), never `Z`. The views build these strings so the agent does not have to. The stored offset is a fixed string: UK/IE is `+01:00` (BST) from the last Sunday in March through the last Sunday in October, and `+00:00` (GMT) otherwise — update the setting at each clock change or every November shift is an hour off. `checked_in_at` / `checked_out_at` keep the offset ZenSched returns.
 
 **Metered reads.** `form_submissions(form_id, event_id=...)` is the natural per-assessment read because every assessment has its own event; `form_export` covers a week or a single event in one call and is what "export Oak Lane" uses. Both bill $0.05 per submission ($0.15 with a photo), once per submission ever. `shift_list`, `shift_status`, `event_get`, and `timesheet_export(mode="hours"|"raw")` are free.
 

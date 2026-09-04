@@ -18,11 +18,13 @@
 -- Every statement is idempotent (IF NOT EXISTS / INSERT OR IGNORE), so it is
 -- safe to run this file again on an existing database.
 --
--- THIS IS NOT OFFICIAL EPC LODGEMENT. Nothing here submits a certificate to
--- Landmark, the Scottish EPC Register, or the SEAI BER register. Nothing
--- here is RdSAP / SAP / SBEM calculation software. The Assessment Record
--- is property type + a working rating band + evidence photos. You still
--- lodge in Elmhurst, Quidos, ECMK, Stroma, or your scheme's portal.
+-- THIS FORM IS NOT THE OFFICIAL EPC REGISTER, NOT RdSAP / SAP / DEAP
+-- LODGEMENT, AND NOT A SOURCE OF RRN / BER NUMBERS. Nothing here submits
+-- a certificate to Landmark, the Scottish EPC Register, or the SEAI BER
+-- register. Nothing here is RdSAP / SAP / SBEM / DEAP calculation software.
+-- The Assessment Record is property type + a working A-G note (not the
+-- register band) + evidence photos. You still lodge in Elmhurst, Quidos,
+-- ECMK, Stroma, DEAP, or your scheme's portal.
 --
 -- PRIVACY: occupant names, occupant phones, access notes (key-safe codes,
 -- lockbox, "keys with neighbour"), assessor accreditation numbers, UPRN,
